@@ -1,0 +1,141 @@
+\documentclass[11pt]{article} % DO NOT CHANGE THE FONT SIZE
+\usepackage[left=2.2cm,right=2.2cm,top=2.5cm,bottom=2.5cm]{geometry} % DO NOT CHANGE THE MARGINS
+\usepackage{amsfonts,amssymb,amsthm,amsmath,amscd}
+\usepackage{enumerate}
+\usepackage{tikz}
+\usepackage{physics}
+\usepackage{hyperref}
+\usepackage{slashed}
+\usepackage{mathrsfs}
+\usepackage{slashed}
+\usepackage{tipa} 
+\usepackage{notoccite}
+\usepackage{cancel}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\theoremstyle{definition}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+
+\numberwithin{theorem}{section}
+\numberwithin{lemma}{section}
+\numberwithin{corollary}{section}
+\numberwithin{proposition}{section}
+\numberwithin{definition}{section}
+\numberwithin{remark}{section}
+\setlength{\parindent}{0cm}
+\title{The ``Quantum" Black-Scholes Model: A Perturbative, Field-Theoretic Review}
+\author{Dylan Standen\footnote{dylansion38@gmail.com}}
+\date{}
+
+
+\begin{document}
+
+\maketitle
+\begin{abstract}
+\noindent
+    We give a review of the applications of quantum field-theoretic techniques to financial models. We begin by discussing basic definitions, conventions, and ideas from field theory. We then apply it to the Black-Scholes model directly, treating volatility perturbatively. We then discuss the interpretation of these results in terms of Feynman-style diagrams. The resulting diagrammatic expansion clarifies the structure of higher-order corrections and provides a systematic procedure for computing price adjustments beyond the baseline Black–Scholes formula.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+Quantum field theory (often shortened to QFT) is a field of study within theoretical and mathematical physics (despite the similar names, these are, in fact, two different sub-fields). Its aim is to extend classical field theory to the realm of relativistic (we shall define what this means later) quantum mechanics. As a field, it has excelled in its aims. For example, the standard model of particle physics, arguably the best scientific model ever devised, is built entirely on the back of the machinery from QFT. The famous example is the measurement of the spin magnetic moment of the electron (often denoted $g_S$); which matches the theoretical prediction astoundingly accurately. \\
+
+Given the subject matter and applications, it seems, at first, unlikely that any of the theory could be applicable to financial processes. This, however, is untrue. Financial systems (like quantum ones) are purely probabilistic and hence admit a lot of the same underlying theory. Even if given different names. For example, when discussing particles in non-relativistic quantum mechanics, the particles are described by wave functions; which are themselves interpreted as probability density functions defined on the Hilbert space $\mathcal{H} = L^2(Q, \mu;\mathbb{C})$, where $Q$ is the configuration space, and $\mu$ is the Lebesgue measure defined on that space. Operators on the Hilbert space (which are themselves self adjoint\footnote{This is defined via the inner product on $\mathcal{H}$.} maps densely defined on $\text{Dom}(\mathcal{O})$, i.e.  $\mathcal{O}: \text{Dom}(\mathcal{O}) \rightarrow \mathcal{H})$ represent the physical observables we can measure. As an example, let us take a finite dimensional Hilbert space with a normalised vector $\Psi \in \mathcal{H}$ and a specific observable $a$. Since $a$ is self adjoint, and $\mathcal{H}$ is finite dimensional, $a$ admits a finite set of real eigenvalues, along with an orthonormal eigenbasis $\{e_i\}_{i = 1}^N$, where $N = \dim \mathcal{H}$, that spans $\mathcal{H}$. With this, we may write $\Psi$ as 
+
+\begin{equation}
+    \Psi = c_ie_i , \hspace{0.25cm} \text{where }c_i \in \mathbb{C} \, ,
+\end{equation}
+and where we have used the Einstein-summation convention. The \textit{Born rule} claims that the probability of the eigenvalue $\lambda_i$ being found when $a$ is measured is 
+\begin{align}
+    P(a = \lambda_i | \Psi) & = |(e_i, \Psi)|^2\\
+    & = \left| \sum_{i} c_j (e_i, e_j) \right|^2\\
+    & = |c_i|^2 \, ,
+\end{align}
+where we have denoted the inner product (which is linear in its second argument) on $\mathcal{H}$ by $(\cdot, \cdot)$. This value is both a real and $0 \leq |c_i|^2\leq 1$. As well as this, notice that 
+\begin{align}
+    (\Psi, \Psi) & = \sum_{i}\sum_j\bar{c}_i c_j(e_i, e_j)\\
+    & = \sum_{i} |c_i|^2 = 1\,,
+\end{align}
+since $||\Psi|| = 1$. This then defines a probability measure on $\mathcal{H}$. We shall not present this result here, as it is a standard finding in the literature. In the case of $L^2(\mathbb{R}, dx; \mathbb{C})$, the probability that a particle is found at a position $x \in B \subset \mathbb{R}$ (the eigenvalue of the position operator $X$ taking values in the Borel set $B$) is 
+
+\begin{align}
+    P\left(x \in B| \Psi\right) = \int_{B} \, \text{d}x \, |\Psi(x)|^2 \, .
+\end{align}
+Hence, there is a natural interpretation of quantum theory in terms of probabilities. This is often called the \textit{Born interpretation} of quantum mechanics. For a rigorous mathematical formulation of the quantum mechanical framework and the probabilistic interpretation of observables, see \cite{Teschl - 2014}. In a similar manner, financial systems are stochastic and admit a natural probability space. \\
+
+The link between quantum field theory and finance was developed and pioneered by B.E. Baaquie in the 1990's (see, for example, \cite{Belal E. Baaquie - 2004}). He was one of the first to treat volatility surfaces as fields and to apply methods from the path integral formulation of QFT to the Black-Scholes (BS) model. In this paper, we aim to introduce the key theory, introduced by B.E. Baaquie, applicable to financial systems, show the equivalence between the Wick rotated Schrödinger equation (SE) and BS, solve the SE using path integral methods with an appropriate Hamiltonian, treat volatility in the model as an interaction term within our QFT, and expand it perturbatively in a small parameter $\epsilon$ before introducing ``Feynman-like diagrams'' to calculate the corresponding perturbed solutions diagrammatically to achieve ever more precise results. To achieve this in section $\bold{2}$, we introduce QFT to the required depth (we shall not need topics such as renormalisation, momentum cut-offs, abelian and non-abelian gauge theories, etc). Section $\bold{3}$ aims to briefly introduce elements of quantitative finance and relate them to section $\bold{2}$. Within section $\bold{4}$ we shall solve the BS model using the path integral formulation developed in $\bold{2}$ and introduce a perturbative expansion of volatility, which we may then solve diagrammatically. In section $\bold{5}$, we include a test for this diagrammatic expansion via a computational comparison between the two results. Finally, we close in section $\boldsymbol{6}$ with a conclusion and avenues for further study. 
+
+\section{Quantum Field Theory:}
+
+Within this paper, we shall not introduce QFT as a whole. We shall restrict ourselves to topics applicable to our problem of interest and leave further topics as references. \\
+
+There are two methods of quantising (the act of making quantum) a classical theory: \textit{canonical quantisation} (also called second quantisation) and \textit{path integral quantisation}. For completeness, we shall briefly introduce canonical quantisation.  
+
+\subsection{Canonical Quantisation:}
+
+In classical mechanics, we often use the Hamiltonian formalism. This formulation takes our particles positions $\boldsymbol{q}_i(t)$ and corresponding conjugate $\boldsymbol{p}_i(t)$ as the key variables. These two form a \textit{phase space}, $(\boldsymbol{q}(t), \boldsymbol{p}(t))$, which tracks the trajectories of our particles in the $\boldsymbol{q}-\boldsymbol{p}$ space, which has dimension $6N$ (given $N$ particles in 3D space). Mathematically, this can be best represented by some finite (or infinite) dimensional manifold $M$, such that $\boldsymbol{q}_i(t) \in M$ and $\boldsymbol{p}_i\in T^*_{\boldsymbol{q}_i(t)}M$. The phase space is then taken as the cotangent bundle $T^*M^N \cong T^*_{\boldsymbol{q}_1}M \times \cdots \times T^*_{\boldsymbol{q}_N}M$ (which is also a manifold of even dimension). This manifold admits a canonical 2-form; the \textit{symplectic form}, $\omega := \sum_{i=1}^N\text{d}\boldsymbol{q}_i \wedge  \text{d}\boldsymbol{p}^i$. This defines a non-degenerate bilinear pairing on $T^*M^N$; however, unlike a Riemannian metric, it does not define distances or angles. The pair $(T^*M^N, \omega)$ then defines a symplectic manifold. \\
+
+The key object of interest in Hamiltonian mechanics is the Hamiltonian function. As we stated previously, the phase space is given in terms of $\boldsymbol{q}(t)$ and the conjugate momenta $\boldsymbol{p}(t)$, which take values within the cotangent bundle of $M$. This is due to the fact that, given the curves $\boldsymbol{q}_i(t) \in M$, their velocities $\dot{\boldsymbol{q}}_i(t)$ take values within $T_{\boldsymbol{q}_i}M$. The tangent bundle is then 
+
+\begin{equation}
+    TM^N= \left\{(\boldsymbol{q}, \dot{\boldsymbol{q}}):\boldsymbol{q} \in M, \, \dot{\boldsymbol{q}}\in T_{\boldsymbol{q}}M^N\,\right\} \, ,
+\end{equation}
+where $T_{\boldsymbol{q}} M^N = T_{\boldsymbol{q}_1}M \times \cdots \times T_{\boldsymbol{q}_N}M $, and similarly for $\boldsymbol{q}$. The momenta can then be defined by first defining the \textit{Lagrangian} (which physically gives the difference between the kinetic and potential energies of the particles) $L:TM  \times\mathbb{R}\rightarrow \mathbb{R}$, with $L = L(\boldsymbol{q}, \dot{\boldsymbol{q}},t)$. The conjugate momenta are then 
+
+\begin{equation}
+    \boldsymbol{p}_i(t) := \pdv{L}{\dot{\boldsymbol{q}}^i(t)} \, ,
+\end{equation}
+
+which naturally defines an element of the cotangent space. Given these quantities, the Hamiltonian, $H(\boldsymbol{q}, \boldsymbol{p},t)$, is the Legendre transform of $L$, i.e. 
+
+\begin{align}
+    H : & = \sum_{i=1}^N \dot{\boldsymbol{q}}_i(t)\pdv{L}{\dot{\boldsymbol{q}}^i(t)} - L(\boldsymbol{q}, \dot{\boldsymbol{q}},t)\\
+    & = \sum_{i=1}^N \dot{\boldsymbol{q}}_i(t)\boldsymbol{p}_i(t) - L(\boldsymbol{q}, \dot{\boldsymbol{q}},t) \, .
+\end{align}
+
+The symplectic form introduces an important object: the \textit{Poisson bracket}. Given smooth functions $f,g \in C^\infty(T^*M,\mathbb{R})$, the Poisson bracket gives the space of functions the structure of a Lie algebra, i.e. there exists a product $\{\cdot,\cdot\}$ (the Poisson bracket) which obeys: bilinearity, anti-symmetry, Leibniz, and the Jacobi identity. In coordinates, if $f = f(\boldsymbol{q}_i, \boldsymbol{p}_i), g = g(\boldsymbol{q}_i, \boldsymbol{p}_i)$ it can be written as 
+
+\begin{equation}\label{12}
+    \{f, g\} = \pdv{f}{\boldsymbol{q}^i}\pdv{g}{\boldsymbol{p}_i} - \pdv{f}{\boldsymbol{p}_i}\pdv{g}{\boldsymbol{q}^i} \, .
+\end{equation}
+
+From (\ref{12}), there is a important example, when $f = \boldsymbol{q}^i$, $g = \boldsymbol{p}_j$. In this case it is clear we have 
+
+\begin{align}
+    \{\boldsymbol{q}^i, \boldsymbol{p}_j\} & = \delta^i_k\delta_{jk}\\
+    & = \delta^i_j \, .
+\end{align}
+
+
+
+
+
+
+
+\newpage 
+\begin{thebibliography}{99}
+%1 
+\bibitem{Teschl - 2014}
+   Gerald Teschl, \emph{``Mathematical Methods in Quantum Mechanics: With Applications to Schr{\"o}dinger Operators''},
+   Graduate Studies in Mathematics, 
+   (2014).
+
+%2
+\bibitem{Belal E. Baaquie - 2004}
+   B.E. Baaquie, \emph{``Quantum Finance: Path Integrals and Hamiltonians for Options and Interest Rates''},
+   Cambridge University Press, 
+   (2004).
+
+\end{thebibliography}
+
+
+
+
+\end{document}
