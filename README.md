@@ -9,4 +9,4 @@ Note: This paper is pedagogical and aims to clarify analogies between diffusion 
 - `main.tex` – LaTeX source
 
 ## Status
-Work in progress draft, written at Part III level.
+Work in progress draft.
